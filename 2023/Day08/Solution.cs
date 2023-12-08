@@ -16,13 +16,14 @@ class Solution : Solver {
         char[] order = input.Split("\n")[0].ToCharArray();
         var route = input.Split("\n").Skip(2).Select(s => Regex.Matches(s, @"\w{3}")).Select((r, rank) => new Route(rank, r[0].Value, r[1].Value, r[2].Value)).ToArray();
         var i = 0;
+        var steps = 0;
         var currentStep = route.Where(r => r.name == "AAA").First();
         do {
             currentStep = NewMethod(order[i++], route, currentStep);
             if (i >= order.Length) i = 0; //starta om
+            steps++;
         } while (currentStep.name != "ZZZ");
-
-        return i;
+        return steps;
     }
 
     public object PartTwo(string input) {
@@ -33,13 +34,15 @@ class Solution : Solver {
 
         long[] numbersToZ = new long[currentSteps.Length];
         Parallel.For(0, currentSteps.Length, j => {
+            var steps = 0;
             var step = currentSteps[j];
             var i = 0;
             do {
                 step = NewMethod(order[i++], route, step);
                 if (i >= order.Length) i = 0; //starta om
+                steps++;
             } while (!step.name.EndsWith('Z'));
-            numbersToZ[j] = i;
+            numbersToZ[j] = steps;
         });
         return LCMM(numbersToZ);
     }
