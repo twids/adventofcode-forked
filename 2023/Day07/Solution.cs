@@ -22,6 +22,7 @@ class Solution : Solver {
     public object PartTwo(string input) {
         var rows = input.Replace("J", "X").Split("\n");
         var hands = rows.Select(s => s.Split(" ")).Select(h => new Hand(h[0], h[1])).ToArray();
+        hands.OrderBy(x => x).ToList().ForEach(Console.WriteLine);
 
         return hands.OrderBy(x => x).Select((h, rank) => (rank + 1) * h.bid).Sum();
     }
@@ -46,13 +47,17 @@ public class Hand(string hand, string bid) : IComparable<Hand> {
         return 0;
     }
 
-    public static int Part1(Hand hand) => hand.cards.Where(c => c.CardName != 'X').GroupBy(c => c.CardName).Count() switch {
-        1 => 7,
-        2 => hand.cards.GroupBy(c => c.CardName).Where(x => x.Count() + hand.amountJoker == 4 || x.Count() + hand.amountJoker == 4).Any() ? 6 : 5, //FullHouseOrFourOfAKind
-        3 => hand.cards.GroupBy(c => c.CardName).Where(x => x.Count() + hand.amountJoker == 3 || x.Count() + hand.amountJoker == 3).Any() ? 4 : 3, //ThreeOfAKIndOrTwoPair
-        4 => 2,
-        _ => 1
-    };
+
+    public static int Part1(Hand hand) {
+        if (hand.amountJoker == 5) return 7;
+        return hand.cards.Where(c => c.CardName != 'X').GroupBy(c => c.CardName).Count() switch {
+            1 => 7,
+            2 => hand.cards.GroupBy(c => c.CardName).Where(x => x.Count() + hand.amountJoker == 4 || x.Count() + hand.amountJoker == 4).Any() ? 6 : 5, //FullHouseOrFourOfAKind
+            3 => hand.cards.GroupBy(c => c.CardName).Where(x => x.Count() + hand.amountJoker == 3 || x.Count() + hand.amountJoker == 3).Any() ? 4 : 3, //ThreeOfAKIndOrTwoPair
+            4 => 2,
+            _ => 1
+        };
+    }
 }
 
 public class Card(char? cardName) : IComparable<Card> {
@@ -61,8 +66,8 @@ public class Card(char? cardName) : IComparable<Card> {
     public override string ToString() => $"{CardName}";
     public int CompareTo(Card other) => Worth.CompareTo(other.Worth);
 
-    public static double CardWorth(char? CardName) {
-        return CardName switch {
+    public static double CardWorth(char? CardName) =>
+        CardName switch {
             'A' => 14,
             'K' => 13,
             'Q' => 12,
@@ -71,5 +76,5 @@ public class Card(char? cardName) : IComparable<Card> {
             'T' => 10,
             _ => char.GetNumericValue(CardName ?? throw (new Exception()))
         };
-    }
+
 }
